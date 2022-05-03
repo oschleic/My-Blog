@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { SiweMessage } from 'siwe';
-import useAuth from '../../utils/auth.js';
+import { useAuth } from '../../utils/auth.js';
 import { useNavigate } from "react-router-dom";
 import {useState, useEffect}from "react";
 

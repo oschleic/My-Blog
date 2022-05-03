@@ -1,14 +1,13 @@
 import React, {useState, useEffect}from "react";
 import { ethers } from 'ethers';
 import { SiweMessage } from 'siwe';
-import {useCookies} from 'react-cookie';
+//import {useCookies} from 'react-cookie';
 
 const authContext = React.createContext();
 
-export default function useAuth() {
-  const [authed, setAuthed] = useState(false);
+export default function AuthProvider({children}) {
   const [nonce, setNonce] = useState(null);
-  const [cookies] = useCookies(['siwe-quickstart']);
+  //const [cookies] = useCookies(['siwe-quickstart']);
 
 
   const domain = window.location.host;
@@ -51,7 +50,6 @@ export default function useAuth() {
         'Sign in with Ethereum to the app.'
       );
     const signature = await signer.signMessage(message);
-    console.log(signature);
     const res = await fetch('/verify', {
       method: "POST",
       headers: {
@@ -60,6 +58,9 @@ export default function useAuth() {
       body: JSON.stringify({ message, signature }),
       credentials: 'include'
     });
+    if(res.status === 200) {
+      localStorage.setItem("activeSession", true);
+    }
     console.log(await res.text());
   }
 
@@ -70,38 +71,18 @@ export default function useAuth() {
     console.log(await res.text());
   }
 
-
-
-
-  return {
-    authed,
-    connectWallet,
-    signInWithEthereum,
-    getInformation,
-  };
-}
-
-export async function useAuthCheck(){
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(()=>{
-    const res = fetch('/auth', {
-      credentials: 'include',
-    }).then(res => setIsAuthenticated(res.status === 200));
-  },[]);
-
-  return{
-    isAuthenticated,
+  function isAuthenticated() {
+    return localStorage.getItem("activeSession");
   }
-}
-/*
-export function AuthProvider({ children }) {
-  const auth = useAuth();
 
-  return <authContext.Provider value={auth}>{children}</authContext.Provider>;
+  let value = {isAuthenticated, signInWithEthereum, connectWallet, getInformation};
+
+
+
+
+  return <authContext.Provider value={value}>{children}</authContext.Provider>;
 }
 
-export default function AuthConsumer() {
+export function useAuth() {
   return React.useContext(authContext);
 }
-*/

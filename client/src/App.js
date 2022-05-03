@@ -1,23 +1,19 @@
 import './App.css';
-import { Link, BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Siwe  from './components/Siwe/Siwe.js';
 import Admin from './components/Admin/Admin.js';
+import AuthProvider, { useAuth } from './utils/auth';
 
 
 function App() {
 
-  async function isAuthenticated(){
-    const res = await fetch('/auth', {
-      credentials: 'include',
-    });
-    console.log(res);
-    return res.status === 200;
+  function RequireAuth({ children }) {
+    const auth = useAuth(); 
+    return auth.isAuthenticated ? children : <Navigate to="/login" />;
   }
 
-
-  
-
   return (
+    <AuthProvider>
     <div className="App">
       <header className="App-header">
         <BrowserRouter>
@@ -26,21 +22,17 @@ function App() {
             <Route 
               path="/admin"
               element={
-                isAuthenticated().then(res => {
-                  console.log(res);
-                  return (res ? 
-                    (<Admin />)
-                    :
-                    (<Navigate to="/login"/>)
-                  );
-                })
-              }
+                <RequireAuth>
+                  <Admin />
+                </RequireAuth>
+            }
             />
             <Route path="/login" element={<Siwe />} />
           </Routes>
         </BrowserRouter>
       </header>
     </div>
+    </AuthProvider>
   );
 }
 
